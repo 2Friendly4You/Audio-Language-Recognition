@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Language Classification</title>
+
+    <style>
+        :root {
+            --border-radius: 12px;
+            --animation-color: rgba(102, 102, 102, 0.75);
+            --primary-bg: #ffffff;
+            --secondary-bg: #f8fafc;
+            --accent-color: #3b82f6;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --success-color: #22c55e;
+            --error-color: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: var(--secondary-bg);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            padding: 20px;
+            width: 100%;
+            max-width: 440px;
+            box-sizing: border-box;
+        }
+
+        .file-input-container {
+            width: 100%;
+        }
+
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            user-select: none;
+            text-align: center;
+        }
+
+        .file-input-label:hover {
+            background-color: #2563eb;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .card {
+            width: 100%;
+            border-radius: var(--border-radius);
+            background: var(--primary-bg);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+                        0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .card .inner {
+            padding: 32px;
+            background: var(--primary-bg);
+            color: var(--text-primary);
+            border-radius: var(--border-radius);
+        }
+
+        .card h2 {
+            margin: 0 0 16px 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+
+        .example-2 {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .example-2 .inner {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            margin: 2px;
+        }
+
+        .example-2::before {
+            content: "";
+            display: block;
+            background: linear-gradient(90deg,
+                rgba(255, 255, 255, 0) 0%,
+                var(--animation-color) 50%,
+                rgba(255, 255, 255, 0) 100%);
+            height: 300px;
+            width: 150px;
+            position: absolute;
+            animation: rotate 5s linear infinite;
+            z-index: 0;
+            top: 50%;
+            transform-origin: top center;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* States */
+        .idle::before {
+            --animation-color: rgba(100, 116, 139, 0.5);
+        }
+
+        .loading::before {
+            --animation-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .error::before {
+            --animation-color: rgba(239, 68, 68, 0.5);
+        }
+
+        .success::before {
+            --animation-color: rgba(34, 197, 94, 0.5);
+        }
+
+        /* Status indicator styles */
+        .idle .status-dot {
+            background-color: var(--text-secondary);
+        }
+
+        .loading .status-dot {
+            background-color: var(--accent-color);
+        }
+
+        .error .status-dot {
+            background-color: var(--error-color);
+        }
+
+        .success .status-dot {
+            background-color: var(--success-color);
+        }
+
+        .language-result {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background-color: var(--secondary-bg);
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .card .inner {
+                padding: 24px;
+            }
+
+            .card h2 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="file-input-container">
+            <label class="file-input-label" for="audio-file">
+                Choose Audio File
+            </label>
+            <input type="file" name="Audio input" id="audio-file" accept="audio/*">
+        </div>
+
+        <div id="audio-classification" class="example-2 card idle">
+            <div class="inner">
+                <h2>Audio Classification</h2>
+                <div class="status">
+                    <div class="status-dot"></div>
+                    <span id="status-text">Ready to analyze</span>
+                </div>
+                <div class="language-result">
+                    Language: <span id="language">Waiting for file...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const audioFile = document.getElementById('audio-file');
+        const card = document.getElementById('audio-classification');
+        const statusText = document.getElementById('status-text');
+        const languageText = document.getElementById('language');
+
+        function updateStatus(state, message) {
+            card.className = 'example-2 card ' + state;
+            statusText.textContent = message;
+        }
+
+        audioFile.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('audio', file);
+
+            try {
+                updateStatus('loading', 'Analyzing audio...');
+                languageText.textContent = 'Processing...';
+                
+                const response = await fetch('http://localhost:5000/language', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                languageText.textContent = data.language;
+                updateStatus('success', 'Analysis complete');
+                
+                setTimeout(() => {
+                    updateStatus('idle', 'Ready to analyze');
+                }, 5000);
+
+            } catch (error) {
+                console.error(error);
+                languageText.textContent = 'Error occurred';
+                updateStatus('error', 'Analysis failed');
+                
+                setTimeout(() => {
+                    updateStatus('idle', 'Ready to analyze');
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html>
