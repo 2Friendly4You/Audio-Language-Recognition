@@ -13,8 +13,8 @@ This project is an AI-based language identification system that can identify the
   - **pt/**: Portuguese audio data.
   - **ru/**: Russian audio data.
   - **tr/**: Turkish audio data.
-- **language_ai_api.py**: Python script for the Language AI API. NOT FINISHED
-- **language_ai.html**: HTML file for the Language AI web interface. NOT FINISHED
+- **language_ai_api.py**: Python script for the Language AI API.
+- **language_ai.html**: HTML file for the Language AI web interface.
 - **language.ipynb**: Jupyter Notebook for experimenting with the Language AI model.
 - **latest_model.keras**: The latest version of the trained model.
 - **README.md**: This README file.
